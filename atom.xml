@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[goto.fail]]></title>
+  <link href="http://goto.fail/atom.xml" rel="self"/>
+  <link href="http://goto.fail/"/>
+  <updated>2014-08-14T10:48:52-05:00</updated>
+  <id>http://goto.fail/</id>
+  <author>
+    <name><![CDATA[]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Test]]></title>
+    <link href="http://goto.fail/blog/2014/08/13/test/"/>
+    <updated>2014-08-13T14:42:46-05:00</updated>
+    <id>http://goto.fail/blog/2014/08/13/test</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
+  
+</feed>

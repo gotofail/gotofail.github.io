@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: At&t | goto.fail]]></title>
+  <link href="http://goto.fail/blog/categories/at-and-t/atom.xml" rel="self"/>
+  <link href="http://goto.fail/"/>
+  <updated>2014-11-25T14:26:07-06:00</updated>
+  <id>http://goto.fail/</id>
+  <author>
+    <name><![CDATA[gotofail]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[AT&amp;T U-Verse VAP2500: The Passwords, They Do Nothing!]]></title>
+    <link href="http://goto.fail/blog/2014/11/25/at-and-t-u-verse-vap2500-the-passwords-they-do-nothing/"/>
+    <updated>2014-11-25T14:26:17-06:00</updated>
+    <id>http://goto.fail/blog/2014/11/25/at-and-t-u-verse-vap2500-the-passwords-they-do-nothing</id>
+    <content type="html"><![CDATA[<p>You may have heard by now that AT&amp;T has a &ldquo;wireless&rdquo; cable box offering for its U-Verse customers, which is pretty sweet. But what I wasn&rsquo;t aware of is that, in order for this cable box to connect to your network, you need to put their special wireless access point on your network as well. Basically, this means that a device you have no control over is now sitting there on your network waiting for wifi connections. Never one to put an unknown like that in my environment, I decided to dig a little deeper, and what I found did not exactly inspire confidence.</p>
+
+<!-- more -->
+
+
+<p>The &ldquo;special wireless access point&rdquo; in question here is an <a href="http://www.arrisi.com/products/product.asp?id=5017">Arris VAP2500</a>. Arris apparently bought this technology as part of their Motorola Mobility acquisition a while back as it still says Motorola all over the one I have. The VAP2500 uses WPS to pair with the cable box, which is less than ideal, but at least the WPS isn&rsquo;t constantly on; it&rsquo;s enabled for a brief period by pressing a button on the front of the device. Also, it uses WPA2 for its wifi security with a long, seemingly arbitrary key, so that&rsquo;s a plus. So far so good! On to the running services.</p>
+
+<p><img class="left" src="/images/vap2500_login.png" width="500" height="325"> Some initial port scanning revealed that there was a web service and a SOAP service running, but that&rsquo;s about it. Let&rsquo;s just focus on the web side for now. Browsing to the web portal showed a typical login screen. Since we don&rsquo;t know the credentials, this would seem to be a pretty big stumbling block. Every page you visit just redirects you back to this login screen until you manage to successfully authenticate yourself.</p>
+
+<p>Well, I should say, almost every page. Which leads me to the <a href="http://www.zerodayinitiative.com/advisories/ZDI-14-387/">first vulnerability</a> I found. There was a plain text file in the root of the web server named admin.conf that contained the following:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ATTadmin,1b12957d189cde9cda68e1587c6cfbdd,0
+</span><span class='line'>super,71a5ea180dcd392aabe93f11237ba8a9,0</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>&ldquo;That&rsquo;s strange,&rdquo; I thought. &ldquo;Those look suspiciously like usernames and password hashes. Surely they wouldn&rsquo;t put sensitive information like that in an unprotected, plain text file in the root of the web server, right?&rdquo; Alas, that is exactly what they did. Every user account&rsquo;s credentials are stored in that file, presumably for easy use in the verification process.</p>
+
+<p>But before you go churning away on those hashes with your fancy, mineral-oil-soaked GPUs, let&rsquo;s pull out the firmware and take a peak at the source code for the authentication algorithm. You know, just for the sake of curiosity.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;?php
+</span><span class='line'>if (isset($&lt;em>POST[&lsquo;user&rsquo;]) &amp;&amp; isset($&lt;/em>POST[&lsquo;pwd&rsquo;]))
+</span><span class='line'>{
+</span><span class='line'>  $user=$&lt;em>POST[&lsquo;user&rsquo;];
+</span><span class='line'>  $pwd=md5(trim($&lt;/em>POST[&lsquo;pwd&rsquo;]));
+</span><span class='line'>  $flag=0;
+</span><span class='line'>  $file_path = trim(shell_exec(&ldquo;call_qcsapi get_file_path security&rdquo;));
+</span><span class='line'>  $file_path = $file_path.&ldquo;admin.conf&rdquo;;
+</span><span class='line'>  $fp = fopen($file_path, &lsquo;r&rsquo;);
+</span><span class='line'>  while(!feof($fp))
+</span><span class='line'>  {   &lt;br/>
+</span><span class='line'>    $buffer = stream_get_line($fp, 100, &ldquo;\n&rdquo;);
+</span><span class='line'>    $arraylist=split(&lsquo;,&rsquo;,$buffer);
+</span><span class='line'>    if($arraylist[0]==$user &amp;&amp; $arraylist[1]==$pwd)
+</span><span class='line'>    {
+</span><span class='line'>      $flag=1;
+</span><span class='line'>      break;
+</span><span class='line'>    }
+</span><span class='line'>  }
+</span><span class='line'>  fclose($fp);
+</span><span class='line'>  if ($flag==1)
+</span><span class='line'>  {
+</span><span class='line'>    echo &ldquo;&lt;script language='javascript'>createCookie(\"p\&rdquo;, \&ldquo;&rdquo;.md5($user).&ldquo;\&rdquo;, 2);&lt;/script>&ldquo;;
+</span><span class='line'>    echo &rdquo;&lt;script language='javascript'>location.href=&lsquo;status_device.php&rsquo;&lt;/script>&ldquo;;
+</span><span class='line'>  }
+</span><span class='line'>  else
+</span><span class='line'>    {echo &rdquo;&lt;script language='javascript'>alert(\&ldquo;Login Failed\&rdquo;)&lt;/script>&ldquo;;}
+</span><span class='line'>}
+</span><span class='line'>?></span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>OK, so they take the user and pwd POST params and compare them with the values from the admin.conf file as we suspected. If they match, the cookie &ldquo;p&rdquo; gets set, and we get redirected inside. However, there seems to be something off about the value they&rsquo;re using for that cookie. Go look at it again, really let the implications of what they&rsquo;re doing here sink in, and when you get back, we&rsquo;ll talk about the <a href="http://www.zerodayinitiative.com/advisories/ZDI-14-388/">second vulnerabillity</a>.</p>
+
+<p>Yup, that&rsquo;s right. They&rsquo;re using the username as the cookie. That&rsquo;s it. The password doesn&rsquo;t even come into play here. If you know a username, you have everything you need. Just set p=[md5 hash of username] in your cookie header, and you&rsquo;re in. More than that, if an account got compromised, changing its password would do absolutely nothing. Checking the source code on the interior pages confirms this and also shows that adding and deleting user accounts is not going to be easy, since the default usernames are hardcoded into the source of every page:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>if (isset($&lt;em>COOKIE[&lsquo;p&rsquo;]))
+</span><span class='line'>{&lt;br/>
+</span><span class='line'>  // Start Moto Customized Passwd
+</span><span class='line'>  if($&lt;/em>COOKIE[&lsquo;p&rsquo;]==md5(&ldquo;ATTadmin&rdquo;))
+</span><span class='line'>  {$priority=0;}
+</span><span class='line'>  else
+</span><span class='line'>  if($_COOKIE[&lsquo;p&rsquo;]==md5(&ldquo;super&rdquo;))
+</span><span class='line'>  {$priority=0;}
+</span><span class='line'>  // End Moto Customized Passwd
+</span><span class='line'>  else
+</span><span class='line'>  {
+</span><span class='line'>    echo &ldquo;&lt;script language='javascript'>location.href=&lsquo;login.php&rsquo;&lt;/script>&rdquo;;
+</span><span class='line'>    return;
+</span><span class='line'>  }
+</span><span class='line'>}
+</span><span class='line'>else
+</span><span class='line'>{
+</span><span class='line'>    echo &ldquo;&lt;script language='javascript'>location.href=&lsquo;login.php&rsquo;&lt;/script>&rdquo;;
+</span><span class='line'>    return;
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>So, now that we&rsquo;re in the web management interface, what can we do? Pretty much the same things you can do from any access point&rsquo;s web interface - change wifi and security settings, manage dhcp, examine logs, upgrade firmware, etc. All that&rsquo;s fine and good, but for real, what can we do? Well, it&rsquo;s a PHP web app&hellip;so&hellip;how about some command injection?</p>
+
+<p><img class="right" src="/images/vap2500_tools_command.png" width="500" height="323"> There were multiple possibilities for discussing the <a href="http://www.zerodayinitiative.com/advisories/ZDI-14-389/">third vulnerability</a> here, but the most straightforward example was in the page tools_command.php which is basically designed specifically to feed commands directly to the shell of the device. Doesn&rsquo;t get much easier than that. This page takes two POST parameters: cmb_header, which has a default value of &ldquo;call_qcsapi&rdquo;, and txt_command, which is supposed to be the command string that you want to feed to the &ldquo;call_qcsapi&rdquo; binary. These two values are then concatenated together and used as the argument for a call to PHP&rsquo;s shell_exec() method. The problem is that there is no verification on either of these params, so you can do a POST request with something akin to &ldquo;cmb_header=&amp;txt_command=whoami&rdquo; in the data section, and the server would happily execute &ldquo;whoami&rdquo; from the device&rsquo;s shell and send you back the response (which in this case was &ldquo;root&rdquo;, just so you know).</p>
+
+<p>And there you have it. Putting all of this together, you grab a username from the admin.conf file, set a cookie &ldquo;p&rdquo; to an md5 hash of that username, and use that cookie in a POST request to inject commands that then get executed on the shell of the device as the root user. Just like that you go from having absolutely no access to having complete control over the most fundamental levels of the device.</p>
+
+<p>I, of course, did the &ldquo;responsible&rdquo; thing and disclosed these issues to Arris through <a href="http://www.zerodayinitiative.com/">ZDI</a>. They addressed the issues I told them about via a firmware update that got pushed out to devices this month, so they are slightly less insecure now. More importantly, now that those updates have finally been released, I can stop holding my tongue about all this awesomeness and share it with you nice folks. And I can start working on the next round of slightly higher hanging fruit. For anyone interested, here&rsquo;s a ruby script I wrote that makes use of all these vulns to modify the root password and enable telnet on vulnerable VAP2500 devices [Use at your own risk! I am not responsible for whatever you end up screwing up!]: <a href="http://goto.fail/projects/vap2500_root.rb">vap2500_root.rb</a></p>
+
+<p>Until next time!</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Vap2500 | goto.fail]]></title>
   <link href="http://goto.fail/blog/categories/vap2500/atom.xml" rel="self"/>
   <link href="http://goto.fail/"/>
-  <updated>2014-11-25T14:26:07-06:00</updated>
+  <updated>2014-12-03T16:25:30-06:00</updated>
   <id>http://goto.fail/</id>
   <author>
     <name><![CDATA[gotofail]]></name>
@@ -151,6 +151,9 @@
 <p>I, of course, did the &ldquo;responsible&rdquo; thing and disclosed these issues to Arris through <a href="http://www.zerodayinitiative.com/">ZDI</a>. They addressed the issues I told them about via a firmware update that got pushed out to devices this month, so they are slightly less insecure now. More importantly, now that those updates have finally been released, I can stop holding my tongue about all this awesomeness and share it with you nice folks. And I can start working on the next round of slightly higher hanging fruit. For anyone interested, here&rsquo;s a ruby script I wrote that makes use of all these vulns to modify the root password and enable telnet on vulnerable VAP2500 devices [Use at your own risk! I am not responsible for whatever you end up screwing up!]: <a href="http://goto.fail/projects/vap2500_root.rb">vap2500_root.rb</a></p>
 
 <p>Until next time!</p>
+
+<p style="font-size:15px;font-style:italic;">The views and opinions expressed herein do not necessarily represent those of my employer&#8230;You know the drill&#8230;</p>
+
 ]]></content>
   </entry>
   
